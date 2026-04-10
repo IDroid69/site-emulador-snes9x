@@ -353,13 +353,16 @@
         });
 
         function handleFile(file) {
-            // Generate a simple numeric ID from filename for Netplay
+            // Netplay requires a numeric Game ID. 
+            // We'll base it ONLY on the room name to ensure friends match easily,
+            // even if their ROM filenames are slightly different (which may desync, but will connect).
+            const roomName = netplayRoom.value || 'default-room';
             let hash = 0;
-            for (let i = 0; i < file.name.length; i++) {
-                hash = ((hash << 5) - hash) + file.name.charCodeAt(i);
+            for (let i = 0; i < roomName.length; i++) {
+                hash = ((hash << 5) - hash) + roomName.charCodeAt(i);
                 hash |= 0;
             }
-            EJS_gameID = Math.abs(hash);
+            window.EJS_gameID = Math.abs(hash);
 
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -371,14 +374,19 @@
                 emulatorContainer.classList.add('bg-black', 'border-transparent');
 
                 // Set game data
-                EJS_gameUrl = URL.createObjectURL(file);
+                window.EJS_gameUrl = URL.createObjectURL(file);
 
                 // Configure Netplay if enabled
                 if (netplayToggle.checked) {
-                    window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; // Default public server
-                    window.EJS_netplayRoom = netplayRoom.value || 'default-room';
+                    window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; 
+                    window.EJS_netplayRoom = roomName;
                     window.EJS_netplayNickname = netplayNickname.value || 'Player';
-                    window.EJS_oldCores = true; // Required for netplay in some versions
+                    window.EJS_oldCores = true; 
+                    window.EJS_oldEJSNetplayServer = true; 
+                    
+                    // Critical for Netplay stability
+                    window.EJS_core = 'snes';
+                    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
                 }
                 
                 // Load EmulatorJS script dynamically
