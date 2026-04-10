@@ -236,6 +236,11 @@
                         </div>
                         <div id="netplay-settings" class="hidden space-y-3 animate-in fade-in duration-300">
                             <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Servidor (Opcional)</label>
+                                <input type="text" id="netplay-url" placeholder="Ex: http://seu-ip-tailscale:3000" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-purple-500 outline-none transition-all">
+                                <p class="text-[8px] text-gray-600 mt-1">Deixe em branco para usar o servidor público.</p>
+                            </div>
+                            <div>
                                 <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Nome da Sala</label>
                                 <input type="text" id="netplay-room" placeholder="Ex: sala-do-felipe" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-purple-500 outline-none transition-all">
                             </div>
@@ -313,6 +318,7 @@
         // Netplay Elements
         const netplayToggle = document.getElementById('netplay-toggle');
         const netplaySettings = document.getElementById('netplay-settings');
+        const netplayUrlInput = document.getElementById('netplay-url');
         const netplayRoom = document.getElementById('netplay-room');
         const netplayNickname = document.getElementById('netplay-nickname');
 
@@ -379,7 +385,11 @@
                 // Configure Netplay if enabled
                 if (netplayToggle.checked) {
                     window.EJS_netplay = true; 
-                    window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; 
+                    
+                    // Use custom URL if provided, otherwise default to public server
+                    const customUrl = netplayUrlInput.value.trim();
+                    window.EJS_netplayUrl = customUrl ? customUrl : 'wss://netplay.emulatorjs.org'; 
+                    
                     window.EJS_netplayRoom = roomName;
                     window.EJS_netplayNickname = netplayNickname.value || 'Player';
                     window.EJS_gameID = 1337; // Use a fixed ID for testing to ensure it matches
