@@ -378,15 +378,15 @@
 
                 // Configure Netplay if enabled
                 if (netplayToggle.checked) {
+                    window.EJS_netplay = true; // Explicitly enable netplay
                     window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; 
                     window.EJS_netplayRoom = roomName;
                     window.EJS_netplayNickname = netplayNickname.value || 'Player';
                     window.EJS_oldCores = true; 
                     window.EJS_oldEJSNetplayServer = true; 
                     
-                    // Critical for Netplay stability
+                    // Force Snes9x core settings for netplay
                     window.EJS_core = 'snes';
-                    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
                 }
                 
                 // Load EmulatorJS script dynamically
