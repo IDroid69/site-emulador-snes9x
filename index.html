@@ -378,14 +378,14 @@
 
                 // Configure Netplay if enabled
                 if (netplayToggle.checked) {
-                    window.EJS_netplay = true; // Explicitly enable netplay
+                    window.EJS_netplay = true; 
                     window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; 
                     window.EJS_netplayRoom = roomName;
                     window.EJS_netplayNickname = netplayNickname.value || 'Player';
-                    window.EJS_oldCores = true; 
-                    window.EJS_oldEJSNetplayServer = true; 
+                    window.EJS_gameID = 1337; // Use a fixed ID for testing to ensure it matches
                     
-                    // Force Snes9x core settings for netplay
+                    // Modern EmulatorJS often doesn't need EJS_oldCores for netplay
+                    // but it DOES need the core to be set correctly
                     window.EJS_core = 'snes';
                 }
                 
