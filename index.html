@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNES Web Player - Emulador Snes9x Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+        }
+        .retro-font {
+            font-family: 'Press+Start+2P', cursive;
+        }
+        #emulator-container {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            margin: 0 auto;
+            background: #000;
+            border: 4px solid #4a4e69;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .snes-purple {
+            color: #8b5cf6;
+        }
+        .snes-bg-purple {
+            background-color: #8b5cf6;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #rom-upload-label {
+            transition: all 0.3s ease;
+        }
+        #rom-upload-label:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="p-6 border-b border-white/10 glass-panel sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 snes-bg-purple rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <i data-lucide="gamepad-2" class="text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">SNES<span class="snes-purple">9x</span> Web</h1>
+            </div>
+            <nav class="hidden md:flex gap-8 text-sm font-medium text-gray-400">
+                <a href="#" class="hover:text-white transition-colors">Início</a>
+                <a href="#controles" class="hover:text-white transition-colors">Controles</a>
+                <a href="https://github.com/EmulatorJS/EmulatorJS" target="_blank" class="hover:text-white transition-colors">Sobre</a>
+            </nav>
+            <button class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-sm border border-white/10 transition-all">
+                v1.0.0
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow p-4 md:p-8">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Emulator Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <div id="emulator-wrapper" class="relative group">
+                    <div id="emulator-container" class="flex items-center justify-center bg-gray-900 border-2 border-dashed border-gray-700 transition-all duration-500">
+                        <div id="start-screen" class="text-center p-8 animate-in fade-in zoom-in duration-700">
+                            <div class="relative inline-block mb-6">
+                                <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                                <i data-lucide="upload-cloud" class="relative w-16 h-16 mx-auto text-gray-400"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold mb-2 tracking-tight">Pronto para Jogar?</h2>
+                            <p class="text-gray-400 mb-8 max-w-sm mx-auto">Arraste seu jogo aqui ou clique no botão abaixo para começar sua jornada nostálgica.</p>
+                            
+                            <label id="rom-upload-label" for="rom-upload" class="cursor-pointer inline-flex items-center gap-3 px-8 py-4 snes-bg-purple hover:bg-purple-600 rounded-full font-bold text-lg transition-all shadow-xl shadow-purple-500/20 active:scale-95">
+                                <i data-lucide="play-circle" class="w-6 h-6"></i>
+                                Carregar Jogo
+                            </label>
+                            <input type="file" id="rom-upload" class="hidden" accept=".smc,.sfc">
+                        </div>
+                        <div id="game" class="w-full h-full hidden"></div>
+                    </div>
+                    
+                    <!-- Floating Controls Overlay -->
+                    <div id="game-controls" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 hidden animate-in slide-in-from-bottom-4 duration-500">
+                        <button onclick="toggleFullscreen()" class="flex items-center gap-2 px-4 py-2 bg-black/60 hover:bg-black/90 rounded-full border border-white/10 backdrop-blur-xl transition-all text-sm font-medium">
+                            <i data-lucide="maximize" class="w-4 h-4"></i>
+                            Tela Cheia
+                        </button>
+                        <button onclick="location.reload()" class="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/40 rounded-full border border-red-500/20 backdrop-blur-xl transition-all text-sm font-medium text-red-400">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Reiniciar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Homebrew Gallery -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2 px-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 snes-purple"></i>
+                        Sugestões Homebrew
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="group relative aspect-video bg-white/5 rounded-xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all cursor-pointer">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3">
+                                <p class="text-xs font-bold uppercase tracking-wider text-purple-400">Demo</p>
+                                <p class="text-sm font-medium">Classic Quest</p>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="p-2 bg-purple-500 rounded-full shadow-lg">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group relative aspect-video bg-white/5 rounded-xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all cursor-pointer">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3">
+                                <p class="text-xs font-bold uppercase tracking-wider text-purple-400">Plataforma</p>
+                                <p class="text-sm font-medium">Retro Dash</p>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="p-2 bg-purple-500 rounded-full shadow-lg">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group relative aspect-video bg-white/5 rounded-xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all cursor-pointer">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3">
+                                <p class="text-xs font-bold uppercase tracking-wider text-purple-400">Puzzle</p>
+                                <p class="text-sm font-medium">Snes Blox</p>
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="p-2 bg-purple-500 rounded-full shadow-lg">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="info" class="w-5 h-5 snes-purple"></i>
+                        Como usar
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li class="flex items-start gap-2">
+                            <span class="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-400 mt-0.5">1</span>
+                            Clique em "Selecionar ROM" e escolha seu arquivo de jogo do Super Nintendo (.smc ou .sfc).
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-400 mt-0.5">2</span>
+                            O emulador Snes9x será carregado automaticamente no seu navegador.
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-400 mt-0.5">3</span>
+                            Use o teclado ou um controle USB/Bluetooth para jogar.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Controls Card -->
+                <div id="controles" class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="keyboard" class="w-5 h-5 snes-purple"></i>
+                        Controles (Teclado)
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">D-Pad</span>
+                            <span class="font-bold text-white">Setas</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Botão A</span>
+                            <span class="font-bold text-white">X</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Botão B</span>
+                            <span class="font-bold text-white">Z</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Botão X</span>
+                            <span class="font-bold text-white">S</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Botão Y</span>
+                            <span class="font-bold text-white">A</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">L / R</span>
+                            <span class="font-bold text-white">Q / W</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Start</span>
+                            <span class="font-bold text-white">Enter</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                            <span class="text-gray-500 uppercase">Select</span>
+                            <span class="font-bold text-white">Shift</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Card -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="users" class="w-5 h-5 snes-purple"></i>
+                        Multiplayer (Netplay)
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-400">Ativar Netplay</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="netplay-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                        <div id="netplay-settings" class="hidden space-y-3 animate-in fade-in duration-300">
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Nome da Sala</label>
+                                <input type="text" id="netplay-room" placeholder="Ex: sala-do-felipe" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-purple-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Seu Apelido</label>
+                                <input type="text" id="netplay-nickname" placeholder="Ex: Player1" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-purple-500 outline-none transition-all">
+                            </div>
+                            <p class="text-[10px] text-gray-500 italic">Dica: Para jogar com amigos, todos devem usar o mesmo **Nome da Sala** e o **mesmo arquivo de jogo**.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Card -->
+                <div class="glass-panel p-6 rounded-2xl border border-white/5">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5 snes-purple"></i>
+                        Recursos
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <i data-lucide="check" class="w-4 h-4 text-green-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold">Save States</p>
+                                <p class="text-[10px] text-gray-500">Salve e carregue em qualquer ponto</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                <i data-lucide="monitor" class="w-4 h-4 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold">Resolução HD</p>
+                                <p class="text-[10px] text-gray-500">Upscaling via hardware</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                                <i data-lucide="cpu" class="w-4 h-4 text-orange-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold">Core Snes9x</p>
+                                <p class="text-[10px] text-gray-500">Máxima compatibilidade</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-8 border-t border-white/5 text-center text-gray-500 text-sm">
+        <p>&copy; 2026 SNES9x Web Player. Feito com ❤️ para fãs de retro-gaming.</p>
+        <p class="mt-2">Não hospedamos ROMs. Use apenas cópias legais dos seus jogos.</p>
+    </footer>
+
+    <!-- EmulatorJS Scripts -->
+    <script type="text/javascript">
+        // EmulatorJS Configuration
+        var EJS_player = '#game';
+        var EJS_core = 'snes'; 
+        var EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+        var EJS_gameUrl = ''; 
+        var EJS_gameID = 1; // Default ID
+
+        // DOM Elements
+        const romUpload = document.getElementById('rom-upload');
+        const startScreen = document.getElementById('start-screen');
+        const gameContainer = document.getElementById('game');
+        const gameControls = document.getElementById('game-controls');
+        const emulatorContainer = document.getElementById('emulator-container');
+        
+        // Netplay Elements
+        const netplayToggle = document.getElementById('netplay-toggle');
+        const netplaySettings = document.getElementById('netplay-settings');
+        const netplayRoom = document.getElementById('netplay-room');
+        const netplayNickname = document.getElementById('netplay-nickname');
+
+        // Netplay Toggle Handler
+        netplayToggle.addEventListener('change', () => {
+            if (netplayToggle.checked) {
+                netplaySettings.classList.remove('hidden');
+            } else {
+                netplaySettings.classList.add('hidden');
+            }
+        });
+
+        // Drag and Drop Handler
+        emulatorContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            emulatorContainer.classList.add('border-purple-500', 'bg-purple-500/5');
+        });
+
+        emulatorContainer.addEventListener('dragleave', () => {
+            emulatorContainer.classList.remove('border-purple-500', 'bg-purple-500/5');
+        });
+
+        emulatorContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            emulatorContainer.classList.remove('border-purple-500', 'bg-purple-500/5');
+            const file = e.dataTransfer.files[0];
+            if (file && (file.name.endsWith('.smc') || file.name.endsWith('.sfc'))) {
+                handleFile(file);
+            } else {
+                alert('Por favor, arraste um arquivo .smc ou .sfc válido.');
+            }
+        });
+
+        // Handle ROM Upload
+        romUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        function handleFile(file) {
+            // Generate a simple numeric ID from filename for Netplay
+            let hash = 0;
+            for (let i = 0; i < file.name.length; i++) {
+                hash = ((hash << 5) - hash) + file.name.charCodeAt(i);
+                hash |= 0;
+            }
+            EJS_gameID = Math.abs(hash);
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // UI Transitions
+                startScreen.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+                gameControls.classList.remove('hidden');
+                emulatorContainer.classList.remove('border-dashed', 'bg-gray-900', 'border-gray-700');
+                emulatorContainer.classList.add('bg-black', 'border-transparent');
+
+                // Set game data
+                EJS_gameUrl = URL.createObjectURL(file);
+
+                // Configure Netplay if enabled
+                if (netplayToggle.checked) {
+                    window.EJS_netplayUrl = 'wss://netplay.emulatorjs.org'; // Default public server
+                    window.EJS_netplayRoom = netplayRoom.value || 'default-room';
+                    window.EJS_netplayNickname = netplayNickname.value || 'Player';
+                    window.EJS_oldCores = true; // Required for netplay in some versions
+                }
+                
+                // Load EmulatorJS script dynamically
+                const script = document.createElement('script');
+                script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+                document.body.appendChild(script);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                emulatorContainer.requestFullscreen().catch(err => {
+                    alert(`Erro ao tentar ativar tela cheia: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
